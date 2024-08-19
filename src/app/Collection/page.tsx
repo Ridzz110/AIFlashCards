@@ -8,11 +8,11 @@ import Link from 'next/link';
 export default function Collection() {
   const [flashcardStacks, setFlashcardStacks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const { userId } = useAuth(); // Clerk's userId
+  const { isLoaded, userId } = useAuth(); // Ensure auth is loaded
 
   useEffect(() => {
-    const fetchFlashcardStacks = async () => {
-      if (userId) {
+    if (typeof window !== 'undefined' && userId && isLoaded) {
+      const fetchFlashcardStacks = async () => {
         try {
           const querySnapshot = await getDocs(
             collection(db, 'users', userId, 'flashcardsStacks')
@@ -27,11 +27,11 @@ export default function Collection() {
         } finally {
           setLoading(false);
         }
-      }
-    };
+      };
 
-    fetchFlashcardStacks();
-  }, [userId]);
+      fetchFlashcardStacks();
+    }
+  }, [userId, isLoaded]);
 
   if (loading) {
     return <div className="flex justify-center items-center min-h-screen bg-zinc-950 text-white">Loading...</div>;

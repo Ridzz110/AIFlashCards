@@ -1,11 +1,11 @@
-"use client"; // Ensures this component is client-side only
+"use client"; 
 import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FlashCardDesign from '../../Component/FlashCardDesign';
 import { db } from '../../firebase';
 import { doc, setDoc } from 'firebase/firestore';
-
+import { useAuth } from "@clerk/nextjs";
 
 interface Flashcard {
   question: string;
@@ -17,9 +17,15 @@ export default function FlashcardComponent() {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [saveStatus, setSaveStatus] = useState("Save");
   const [loading, setLoading] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null); // Add state for userId
+  const { isLoaded, userId } = useAuth(); // Ensure auth is loaded  
 
 
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      // This code will only run on the client side
+      // Fetch user ID logic here if needed
+    }
+  }, []);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
