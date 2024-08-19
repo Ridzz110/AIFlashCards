@@ -29,9 +29,9 @@ export default function Navbar() {
       </div>
       {/* Right side: Button and Authentication */}
       <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0">
-        <Link href="#pricing">
+        <Link href="/Flashcard">
         <Button variant="outline" className="mr-0 md:mr-4">
-          Get now
+          Try now
         </Button>
         </Link>
         <Link href="/Collection">

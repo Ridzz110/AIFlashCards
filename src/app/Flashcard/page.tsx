@@ -1,11 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FlashCardDesign from '../../Component/FlashCardDesign';
-import { db, auth } from '../../firebase';
+import { db } from '../../firebase';
 import { doc, setDoc } from 'firebase/firestore';
-import { User } from 'firebase/auth';
+import { useAuth } from '@clerk/nextjs';
 
 interface Flashcard {
   question: string;
@@ -16,13 +16,15 @@ export default function FlashcardComponent() {
   const [input, setInput] = useState("");
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [saveStatus, setSaveStatus] = useState("Save");
+  const [loading, setLoading] = useState(false);
+  const { userId } = useAuth(); // Get userId from Clerk
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
   };
 
   const handleGenerate = async () => {
-    console.log("button pressed!");
+    setLoading(true);
     try {
       const response = await fetch('/api/FlashCards', {
         method: 'POST',
@@ -37,17 +39,15 @@ export default function FlashcardComponent() {
       }
 
       const data = await response.json();
-      console.log('Generated flashcards:', data);
       setFlashcards(data.flashcards);
     } catch (error) {
       console.error('Error generating flashcards:', error);
+    } finally {
+      setLoading(false);
     }
   };
 
   const handleSave = async () => {
-    const user = auth.currentUser as User;
-    const userId = user?.uid;
-
     if (!userId) {
       console.error('User is not authenticated');
       return;
@@ -61,17 +61,10 @@ export default function FlashcardComponent() {
 
     try {
       const stackRef = doc(db, `users/${userId}/flashcardsStacks/${stackName}`);
-      
-      // Save the entire stack of flashcards as a single document
-      await setDoc(stackRef, {
-        name: stackName,
-        flashcards: flashcards
-      });
-
+      await setDoc(stackRef, { name: stackName, flashcards });
       console.log('Flashcards stack saved successfully');
       setSaveStatus("Saved!");
-      
-      // Reset save status back to "Save" after 1 second
+
       setTimeout(() => setSaveStatus("Save"), 1000);
     } catch (error) {
       console.error('Error saving flashcards:', error);
@@ -90,16 +83,17 @@ export default function FlashcardComponent() {
           value={input}
           onChange={handleInputChange}
         />
-        <Button variant="default" className="ml-4 bg-black lg:mt-0 mt-10" onClick={handleGenerate}>
-          Generate
+        <Button variant="default" className="ml-4 bg-black lg:mt-0 mt-10" onClick={handleGenerate} disabled={loading}>
+          {loading ? "Generating..." : "Generate"}
         </Button>
       </div>
+      {loading && <p className="text-white my-4">Generating flashcards, please wait...</p>}
       <div className="my-10 grid lg:grid-cols-3 md:grid-cols-2 grid-cols-1 gap-6">
         {flashcards.map((card, index) => (
           <FlashCardDesign key={index} question={card.question} answer={card.answer} />
         ))}
       </div>
-      <Button className="bg-black mb-10" onClick={handleSave}>{saveStatus}</Button>
+      <Button className="bg-black mb-10" onClick={handleSave} disabled={!flashcards.length}>{saveStatus}</Button>
     </div>
   );
 }
