@@ -63,7 +63,7 @@ export default function CollectionPage({ params }: CollectionPageProps) {
     fetchCards();
   }, [stackId, userId]);
 
-  if (loading) return <div className='bg-gradient-to-tr flex flex-col items-center from-zinc-800 to-zinc-950 w-full min-h-screen text-white font-semibold p-6'>Loading...</div>;
+  if (loading) return <div className='bg-gradient-to-tr flex flex-col items-center from-zinc-800 to-zinc-950 w-full min-h-screen text-white font-semibold p-6'>Loading...</div>
   if (error) return <div>{error}</div>;
 
   return (

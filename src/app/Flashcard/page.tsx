@@ -1,11 +1,13 @@
-"use client"; 
-import { useState, useEffect } from "react";
+'use client';
+
+import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import FlashCardDesign from '../../Component/FlashCardDesign';
-import { db } from '../../firebase';
-import { doc, setDoc } from 'firebase/firestore';
 import { useAuth } from "@clerk/nextjs";
+import dynamic from 'next/dynamic';
+
+const DynamicFirebaseComponent = dynamic(() => import('../../Component/firebase-component'), { ssr: false });
 
 interface Flashcard {
   question: string;
@@ -17,15 +19,7 @@ export default function FlashcardComponent() {
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [saveStatus, setSaveStatus] = useState("Save");
   const [loading, setLoading] = useState(false);
-  const { isLoaded, userId } = useAuth(); // Ensure auth is loaded  
-
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      // This code will only run on the client side
-      // Fetch user ID logic here if needed
-    }
-  }, []);
+  const { isLoaded, userId } = useAuth();
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInput(e.target.value);
@@ -55,29 +49,9 @@ export default function FlashcardComponent() {
     }
   };
 
-  const handleSave = async () => {
-    if (!userId) {
-      console.error('User is not authenticated');
-      return;
-    }
-
-    const stackName = prompt("Enter a name for your stack of flashcards:");
-    if (!stackName) {
-      console.error('No name provided for the stack');
-      return;
-    }
-
-    try {
-      const stackRef = doc(db, `users/${userId}/flashcardsStacks/${stackName}`);
-      await setDoc(stackRef, { name: stackName, flashcards });
-      console.log('Flashcards stack saved successfully');
-      setSaveStatus("Saved!");
-
-      setTimeout(() => setSaveStatus("Save"), 1000);
-    } catch (error) {
-      console.error('Error saving flashcards:', error);
-    }
-  };
+  if (!isLoaded) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="min-w-screen-lg flex flex-col justify-center items-center min-h-screen bg-gradient-to-tr from-zinc-800 via-zinc-950 to-zinc-800">
@@ -101,7 +75,13 @@ export default function FlashcardComponent() {
           <FlashCardDesign key={index} question={card.question} answer={card.answer} />
         ))}
       </div>
-      <Button className="bg-black mb-10" onClick={handleSave} disabled={!flashcards.length}>{saveStatus}</Button>
+      {isLoaded && userId && (
+        <DynamicFirebaseComponent
+          userId={userId}
+          flashcards={flashcards}
+          setSaveStatus={setSaveStatus}
+        />
+      )}
     </div>
   );
 }
