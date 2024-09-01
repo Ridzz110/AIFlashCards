@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../../../firebase'; // Adjust the path to your firebase.js file
 import { doc, getDoc } from 'firebase/firestore';
-import FlashCardDesign from '@/Component/FlashCardDesign';
+import FlashCardDesign from '@/Component/flashCardDesign';
 import { useAuth } from '@clerk/nextjs';
 
 interface Flashcard {

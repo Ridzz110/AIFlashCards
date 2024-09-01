@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import FlashCardDesign from '../../Component/FlashCardDesign';
+import FlashCardDesign from '../../Component/flashCardDesign';
 import { useAuth } from "@clerk/nextjs";
 import dynamic from 'next/dynamic';
 
-const DynamicFirebaseComponent = dynamic(() => import('../../Component/firebase-component'), { ssr: false });
+const DynamicFirebaseComponent = dynamic(() => import('../../Component/firebaseComponent'), { ssr: false });
 
 interface Flashcard {
   question: string;
